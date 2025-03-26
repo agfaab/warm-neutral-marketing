@@ -1,10 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { X } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -20,6 +21,7 @@ const ContactSection = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const {
@@ -65,6 +67,19 @@ const ContactSection = () => {
       reset();
     }
   }, [isSubmitSuccessful, reset]);
+  
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isSuccessModalOpen) {
+        setIsSuccessModalOpen(false);
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isSuccessModalOpen]);
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
@@ -114,9 +129,14 @@ const ContactSection = () => {
                       : "border-gray-200 focus:ring-kambl/20 focus:border-kambl"
                   )}
                   placeholder="John Doe"
+                  aria-invalid={errors.name ? "true" : "false"}
+                  aria-describedby={errors.name ? "name-error" : undefined}
                 />
                 {errors.name && (
-                  <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                  <p id="name-error" className="text-red-500 text-sm mt-1 flex items-center">
+                    <span className="inline-block w-4 h-4 mr-1">⚠️</span> 
+                    {errors.name.message}
+                  </p>
                 )}
               </div>
               
@@ -135,9 +155,14 @@ const ContactSection = () => {
                       : "border-gray-200 focus:ring-kambl/20 focus:border-kambl"
                   )}
                   placeholder="john@example.com"
+                  aria-invalid={errors.email ? "true" : "false"}
+                  aria-describedby={errors.email ? "email-error" : undefined}
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                  <p id="email-error" className="text-red-500 text-sm mt-1 flex items-center">
+                    <span className="inline-block w-4 h-4 mr-1">⚠️</span> 
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -188,9 +213,14 @@ const ContactSection = () => {
                     : "border-gray-200 focus:ring-kambl/20 focus:border-kambl"
                 )}
                 placeholder="Tell us about your project and goals..."
+                aria-invalid={errors.message ? "true" : "false"}
+                aria-describedby={errors.message ? "message-error" : undefined}
               ></textarea>
               {errors.message && (
-                <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
+                <p id="message-error" className="text-red-500 text-sm mt-1 flex items-center">
+                  <span className="inline-block w-4 h-4 mr-1">⚠️</span> 
+                  {errors.message.message}
+                </p>
               )}
             </div>
             
@@ -202,7 +232,7 @@ const ContactSection = () => {
                   "w-full sm:w-auto px-8 py-3 rounded-lg font-poppins font-medium text-white transition-all duration-300 relative overflow-hidden",
                   isSubmitting 
                     ? "bg-kambl/80 cursor-not-allowed" 
-                    : "bg-kambl hover:shadow-lg active:translate-y-0.5"
+                    : "bg-kambl hover:shadow-lg hover:translate-y-[-2px] active:translate-y-0.5"
                 )}
               >
                 {isSubmitting ? (
@@ -224,21 +254,42 @@ const ContactSection = () => {
       
       {/* Success Modal */}
       {isSuccessModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl p-8 max-w-md w-full animate-fade-in">
-            <div className="text-center">
+        <div 
+          className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm animate-fade-in"
+          onClick={(e) => {
+            if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+              setIsSuccessModalOpen(false);
+            }
+          }}
+        >
+          <div 
+            ref={modalRef}
+            className="bg-white rounded-xl p-8 max-w-md w-full animate-fade-in shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="success-modal-title"
+          >
+            <div className="text-center relative">
+              <button 
+                onClick={() => setIsSuccessModalOpen(false)}
+                className="absolute right-0 top-0 text-kambl-muted hover:text-kambl transition-colors"
+                aria-label="Close dialog"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              
               <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Message Received!</h3>
+              <h3 id="success-modal-title" className="text-xl font-semibold mb-2">Message Received!</h3>
               <p className="text-kambl-muted mb-6">
                 Thank you for reaching out. We'll get back to you within 24 hours.
               </p>
               <button
                 onClick={() => setIsSuccessModalOpen(false)}
-                className="bg-kambl text-white px-6 py-2 rounded-lg font-medium transition-all hover:shadow-md"
+                className="bg-kambl text-white px-6 py-2 rounded-lg font-medium transition-all hover:shadow-md hover:translate-y-[-2px] active:translate-y-0.5"
               >
                 Close
               </button>

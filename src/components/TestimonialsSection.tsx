@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Testimonial {
   text: string;
@@ -38,9 +39,21 @@ const TestimonialsSection = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const slideRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -96,6 +109,18 @@ const TestimonialsSection = () => {
       }
     }, 8000);
   };
+  
+  const handlePrev = () => {
+    setActiveIndex((prevIndex) => 
+      prevIndex === 0 ? testimonials.length - 1 : prevIndex - 1
+    );
+  };
+  
+  const handleNext = () => {
+    setActiveIndex((prevIndex) => 
+      (prevIndex + 1) % testimonials.length
+    );
+  };
 
   return (
     <section 
@@ -114,11 +139,11 @@ const TestimonialsSection = () => {
       
       <div 
         className={cn(
-          "max-w-4xl mx-auto transition-all duration-500",
+          "max-w-4xl mx-auto transition-all duration-500 relative",
           isVisible ? "opacity-100" : "opacity-0"
         )}
       >
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden rounded-xl">
           <div 
             ref={slideRef}
             className="flex transition-transform duration-700 ease-out"
@@ -126,7 +151,7 @@ const TestimonialsSection = () => {
           >
             {testimonials.map((testimonial, index) => (
               <div key={index} className="w-full flex-shrink-0 px-4">
-                <div className="bg-kambl-beige rounded-2xl p-8 md:p-10 shadow-sm">
+                <div className="bg-kambl-beige rounded-2xl p-6 md:p-10 shadow-sm">
                   <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-6">
                     <div className="flex-shrink-0">
                       <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-md">
@@ -155,6 +180,24 @@ const TestimonialsSection = () => {
           </div>
         </div>
         
+        {/* Navigation Arrows */}
+        <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 flex justify-between px-2 md:px-6 z-10 pointer-events-none">
+          <button
+            onClick={handlePrev}
+            className="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-kambl hover:bg-kambl hover:text-white transition-colors pointer-events-auto"
+            aria-label="Previous testimonial"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={handleNext}
+            className="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-kambl hover:bg-kambl hover:text-white transition-colors pointer-events-auto"
+            aria-label="Next testimonial"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+        
         {/* Navigation Dots */}
         <div className="flex justify-center mt-8 space-x-3">
           {testimonials.map((_, index) => (
@@ -162,12 +205,13 @@ const TestimonialsSection = () => {
               key={index}
               onClick={() => handleDotClick(index)}
               className={cn(
-                "w-3 h-3 rounded-full transition-all duration-300",
+                "transition-all duration-300",
                 index === activeIndex 
-                  ? "bg-kambl w-8" 
-                  : "bg-kambl-muted/40 hover:bg-kambl-muted"
+                  ? "w-8 h-3 bg-kambl rounded-full" 
+                  : "w-3 h-3 bg-kambl-muted/40 hover:bg-kambl-muted rounded-full"
               )}
               aria-label={`Go to testimonial ${index + 1}`}
+              aria-current={index === activeIndex ? "true" : "false"}
             />
           ))}
         </div>

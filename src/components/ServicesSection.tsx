@@ -15,6 +15,8 @@ const ServiceCard = ({ title, description, tagline, icon, expandedContent }: Ser
   const [isExpanded, setIsExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentHeight, setContentHeight] = useState<number | null>(null);
 
   useEffect(() => {
     const card = cardRef.current;
@@ -27,35 +29,46 @@ const ServiceCard = ({ title, description, tagline, icon, expandedContent }: Ser
       const x = (e.clientX - rect.left) / rect.width - 0.5;
       const y = (e.clientY - rect.top) / rect.height - 0.5;
       
-      card.style.setProperty('--rotate-x', `${y * -8}deg`);
-      card.style.setProperty('--rotate-y', `${x * 8}deg`);
+      // Smoother, less intense tilt effect
+      const tiltX = y * -5; // Reduced from -8
+      const tiltY = x * 5;  // Reduced from 8
+      
+      card.style.transition = isHovered ? 'transform 0.1s ease-out' : 'transform 0.3s ease-out';
+      card.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(${isHovered ? 1.02 : 1})`;
+    };
+
+    const handleMouseLeave = () => {
+      card.style.transition = 'transform 0.3s ease-out';
+      card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
     };
 
     card.addEventListener('mousemove', handleMouseMove);
+    card.addEventListener('mouseleave', handleMouseLeave);
+    
     return () => {
       card.removeEventListener('mousemove', handleMouseMove);
+      card.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, [isHovered]);
+
+  useEffect(() => {
+    // Measure the expanded content height for smooth animations
+    if (contentRef.current) {
+      setContentHeight(contentRef.current.scrollHeight);
+    }
+  }, [expandedContent]);
 
   return (
     <div 
       ref={cardRef}
       className={cn(
-        "tilt-card relative bg-white p-6 rounded-lg border border-kambl/5 shadow-sm transition-all duration-300 overflow-hidden",
-        isHovered && "shadow-lg border-kambl/20",
-        isExpanded && "h-auto"
+        "relative bg-white p-6 rounded-lg border border-kambl/5 shadow-sm transition-all duration-300 overflow-hidden flex flex-col h-full",
+        isHovered && "shadow-lg border-kambl/20"
       )}
-      style={{ height: isExpanded ? 'auto' : '340px' }}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        if (cardRef.current) {
-          cardRef.current.style.setProperty('--rotate-x', '0deg');
-          cardRef.current.style.setProperty('--rotate-y', '0deg');
-        }
-      }}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="subtle-rotate flex flex-col h-full">
+      <div className="flex flex-col h-full">
         <div className="mb-4 text-kambl-muted">
           <div className="w-12 h-12 flex items-center justify-center bg-kambl-beige rounded-lg mb-6">
             {icon}
@@ -68,22 +81,28 @@ const ServiceCard = ({ title, description, tagline, icon, expandedContent }: Ser
         <h3 className="text-xl font-poppins font-semibold mb-3">{title}</h3>
         <p className="text-kambl-muted mb-4">{description}</p>
         
-        <div className={cn(
-          "overflow-hidden transition-all duration-300",
-          isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-        )}>
-          <p className="text-kambl-muted mt-4">{expandedContent}</p>
+        <div 
+          ref={contentRef}
+          className="overflow-hidden transition-all duration-500 ease-in-out"
+          style={{ 
+            maxHeight: isExpanded ? `${contentHeight}px` : '0',
+            opacity: isExpanded ? 1 : 0,
+            marginBottom: isExpanded ? '1rem' : '0'
+          }}
+        >
+          <p className="text-kambl-muted">{expandedContent}</p>
         </div>
         
-        <div className="mt-auto">
+        <div className="mt-auto pt-4">
           <button 
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-kambl font-medium hover:text-kambl/80 transition-colors flex items-center"
+            className="text-kambl font-medium hover:text-kambl/80 transition-colors flex items-center group"
+            aria-expanded={isExpanded}
           >
             {isExpanded ? 'Show Less' : 'Learn More'}
             <svg 
               className={cn(
-                "ml-1 w-4 h-4 transition-transform duration-300",
+                "ml-1 w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5",
                 isExpanded && "rotate-180"
               )} 
               fill="none" 
