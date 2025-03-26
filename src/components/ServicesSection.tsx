@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { MagnifyingGlass, TrendingUp, BrowserWindow } from 'lucide-react';
+import { Search, TrendingUp, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ServiceCardProps {
@@ -105,7 +105,7 @@ const ServicesSection = () => {
       title: "Search Engine Optimization",
       description: "Boost your visibility with data-backed SEO strategies that drive organic traffic and improve search rankings.",
       tagline: "Rank higher, grow organically",
-      icon: <MagnifyingGlass className="w-6 h-6 text-kambl" />,
+      icon: <Search className="w-6 h-6 text-kambl" />,
       expandedContent: "Our comprehensive SEO approach includes technical optimization, content strategy, keyword research, and continuous performance monitoring. We focus on sustainable practices that provide long-term results rather than quick fixes that might compromise your site in future algorithm updates."
     },
     {
@@ -119,7 +119,7 @@ const ServicesSection = () => {
       title: "Web Design & Development",
       description: "Create seamless user experiences with responsive, conversion-focused websites that represent your brand.",
       tagline: "Convert visitors into customers",
-      icon: <BrowserWindow className="w-6 h-6 text-kambl" />,
+      icon: <Monitor className="w-6 h-6 text-kambl" />,
       expandedContent: "Our web design process emphasizes both aesthetics and functionality. We build responsive, fast-loading sites with intuitive navigation and strong calls-to-action. Every design decision is made with conversion optimization in mind, ensuring your site not only looks great but performs excellently."
     }
   ];
