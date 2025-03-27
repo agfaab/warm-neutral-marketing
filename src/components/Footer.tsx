@@ -1,4 +1,3 @@
-
 import { Facebook, Instagram, Linkedin, Mail } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -54,7 +53,7 @@ const Footer = () => {
     { 
       name: 'Email', 
       icon: <Mail className="w-5 h-5" />, 
-      href: 'mailto:hello@kambl.com' 
+      href: 'mailto:Hello@kambl.co.uk' 
     },
   ];
 
@@ -113,20 +112,15 @@ const Footer = () => {
             </ul>
           </div>
           
-          {/* Contact Info */}
+          {/* Contact Info - Updated */}
           <div className="lg:col-span-1">
             <h3 className="text-lg font-poppins font-semibold mb-4">Contact Us</h3>
             <address className="not-italic">
-              <p className="text-kambl-muted mb-2">123 Marketing Avenue</p>
-              <p className="text-kambl-muted mb-2">San Francisco, CA 94107</p>
-              <p className="text-kambl-muted mb-2">
-                <a href="tel:+14155555555" className="hover:text-kambl transition-colors">
-                  (415) 555-5555
-                </a>
-              </p>
+              <p className="text-kambl-muted mb-2">Manchester</p>
+              <p className="text-kambl-muted mb-2">United Kingdom</p>
               <p className="text-kambl-muted">
-                <a href="mailto:hello@kambl.com" className="hover:text-kambl transition-colors">
-                  hello@kambl.com
+                <a href="mailto:Hello@kambl.co.uk" className="hover:text-kambl transition-colors">
+                  Hello@kambl.co.uk
                 </a>
               </p>
             </address>
